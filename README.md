@@ -2,7 +2,7 @@
 # Micro Professor MPF-1B add-on for the SC126.
 
 # Why do this?
-My reason for doing this is because I enjoy directly typing machine code in to RAM with a dedicated HEX keyboard/display and operating a system in this very low level way with minimal interference from the operating system.
+My reason for doing this is because I enjoy working in machine code and hand assembly with a dedicated HEX keyboard/display in this very low level way with minimal interference from the operating system.
 I started out in 1990 buying my first Z80 computer kit from Maplin electronics. This had a mainboard and a keypad with 7 segment displays allowing basic entry and running of machine code then at college was my introduction to the Micro Professor and with its more advanced features I had to build my own. Then over the last 30 years I have built many different variations of the Micro Professor each with more advanced designs each time. 
 
 # My design
