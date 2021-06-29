@@ -2,10 +2,13 @@
 # Micro Professor MPF-1B add-on for the SC126.
 
 # Why do this?
-My reason for doing this is because I much prefer directly typing machine code in to RAM with a dedicated HEX keyboard/display over using terminal style HEX monitors, and I have a long history of this...
-I started out in 1990 buying my first Z80 computer kit from Maplin electronics. This had a mainboard and a keypad with 7 segment displays allowing basic entry and running of machine code then at college was my introduction to the Micro Professor and with its more advanced features I had to build my own. Over the last 30 years I have build many different variations of the Micro Professor each with more advanced designs.
+My reason for doing this is because I enjoy directly typing machine code in to RAM with a dedicated HEX keyboard/display and operating a system in this very low level way with minimal interference from the operating system.
+I started out in 1990 buying my first Z80 computer kit from Maplin electronics. This had a mainboard and a keypad with 7 segment displays allowing basic entry and running of machine code then at college was my introduction to the Micro Professor and with its more advanced features I had to build my own. Then over the last 30 years I have built many different variations of the Micro Professor each with more advanced designs each time. 
+
 # My design
-The hardware consists of the SC126 computer Z180 mainboard by Steve Cousins and an interface board connected to a keyboard with 7 segment LED display which I designed.
+The hardware consists of the SC126 computer Z180 mainboard by Steve Cousins. Its a great system that can run either ROMWBW CP/M or SCMONITOR or be used in many different ways. 
+I replaced the SCMONITOR ROM with my own and made an interface board connected to a keyboard with 7 segment LED display which I designed based on my previous 24MHz Z80 computer build.
+
 Changes to the original design of the Micro Professor include... 
 
 Designing new 74Fxxx series TTL logic to allow operation at high clock speeds.
