@@ -16,7 +16,7 @@ Removing the cassette LOAD and SAVE circuits as the computer runs very fast now 
 Adding a PIC microcontroller to manage the hardware /BREAK control signal at power up. 
 Altering the INT key function so when pressed it generates a single INT pulse instead, using the same PIC.
 
-The firmware is my modified MPF-1B ROM with channges as described here...
+The firmware is my modified MPF-1B ROM with changes as described here...
 
 Changes to the firmware include Z180 register initialisation, 
 Setting up the MMU, 
