@@ -34,7 +34,7 @@ a /NMI interrupt before the firmware has had a chance to initialise the system h
 the BREAK signal from the 74F573 output port to the 74LS90 decade counter that controls the /NMI line. A PIC12F675 microcontroller controls the transistor and at 
 power up waits three seconds before turning the transistor ON giving adequate time to initialise everything. 
 Once the transistor is ON after three seconds the user can freely use the MONI key and single step key and hardware breakpoint functions in the same way as the 
-original Micro Professor. The speed of 74Fxxx series logic is so fast there are no latency issues even when the CPU is running at 36864 MHZ.
+original Micro Professor. The speed of 74Fxxx series logic is so fast there are no latency issues even when the CPU is running at 36.864 MHZ.
 I now have a Micro Professor that now runs 20 times faster!!!
 
 
