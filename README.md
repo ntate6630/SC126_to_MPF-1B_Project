@@ -14,7 +14,7 @@ Changes to the original design of the Micro Professor include...
 Designing new 74Fxxx series TTL logic to allow operation at high clock speeds.
 Removing the cassette LOAD and SAVE circuits as the computer runs very fast now so they are'nt usefull any more, and using Z180 serial port 0 instead.
 Adding a PIC microcontroller to manage the hardware /BREAK control signal at power up. 
-Altering the INT key function so when pressed it generates a single INT pluse instead, using the same PIC.
+Altering the INT key function so when pressed it generates a single INT pulse instead, using the same PIC.
 
 The firmware is my modified MPF-1B ROM with channges as described here...
 
