@@ -1,0 +1,203 @@
+; UPF-1D i2c update - 6th March 2022
+; Integration of i2c read and write with key commands.
+
+
+I2C_WR:
+1288	DB	00			IN	A, 	(00)		; Read USER key.
+128A	CB	77			BIT	6,	A
+128C	C2	9F	12		JP	NZ,	"J1"		; Do i2c if USER key pressed.
+128F	CD	00	10		CALL		"1000"		; Init i2c.
+1292	2A	B1	1F		LD	HL,	(1FB1)		; Start address.
+1295	ED	5B	B3	1F	LD	DE, 	(1FB3)		; End address.
+1299	CD	78	11		CALL		"1178"		; Write block to EEPROM.
+129C	C3	4D	03		JP		"034D"		; Jump back to OS.
+
+J1:
+129F	CD	2D	05		CALL	052D			; Do checksum.
+12A2	C3	27	03		JP		"0327"		; Jump back to serial TX code.
+
+
+I2C_RD_SECTION:
+12A5	DB	00			IN	A,	(00)		; Read USER key.
+12A7	CB	77			BIT	6,	A
+12A9	C2	69	03		JP	NZ,	"SERIAL_RX"	; Do i2c if USER key pressed.
+
+INIT:
+12AC 	3E 	01               	LD 	A,	01H		; Set initial state.
+12AE 	32 	E4 	1F            	LD 	(1FE4H), A		; Save state.
+12B1 	2A 	C2 	1F           	LD 	HL,	(1FC2H)		; Get initial start address.
+12B4 	54                  		LD 	D,	H		
+12B5 	5D                  		LD 	E,	L
+12B6 	ED 	53 	DE 	1F     	LD 	(1FDEH), DE		; Save to "ADSAVE".
+LOOP1:
+12BA 	ED 	5B 	DE 	1F     	LD 	DE,	(1FDEH)		; 
+12BE 	21 	B6 	1F            	LD 	HL,	1FB6H
+12C1 	7B  
+
+12C2 	CD 	78 	06            	CALL 	0678			; HEX7SEG
+12C5 	7A                  		LD 	A,	D
+12C6 	CD 	78 	06            	CALL 	0678			; HEX7SEG
+12C9	C5                  		PUSH 	BC
+12CA    E5                  		PUSH 	HL
+12CB 	06 	04            		LD 	B,	04H
+12CD 	21 	B6 	1F            	LD 	HL,	1FB6H
+LOOP2:
+12D0 	CB 	F6               	SET 	6,	(HL)		; Place 4 decimal points in the four 
+12D2 	23                  		INC 	HL			; lefthand digits to indicate an address.
+12D3 	10 	FB               	DJ	NZ, 	LOOP2
+12D5 	E1                  		POP 	HL
+12D6 	C1                  		POP 	BC
+12D7 	DD 	21 	B4 	1F     	LD 	IX,	1FB4H		; Point to four lefthand digits in display buffer.
+12DB 	3E 	02              	LD 	A,	02H		; Set "-" in digit 5 and
+12DD 	32 	B5 	1F            	LD 	(1FB5H), A		; Save to display buffer
+12E0 	3A 	E4 	1F            	LD 	A,	(1FE4H)		; Get state.
+12E3 	FE 	01               	CP 	01H
+12E5 	CC 	7B 	13            	CALL 	Z,	PUT_S		; If state = 01 then put "S" in digit 6 of display buffer. 
+12E8 	FE 	02               	CP 	02H
+12EA 	CC 	8C 	13            	CALL 	Z,	PUT_E		; If state = 02 then put "E" in digit 6 of display buffer.
+12ED 	CD	FE 	05            	CALL 	SCAN			; Scan keyboard until a key is pressed and display on LED display.
+12F0 	CD 	9A 	13            	CALL 	BEEB			; Short beep.
+12F3 	FE 	10               	CP 	10H
+12F5	38 	0E               	JR 	C,	HEXKEY		; Process hex key if key is 0 to F.
+12F7	FE 	11               	CP 	11H
+12F9	28 	2F               	JR 	Z,	MINUSKEY	; Branch to minus key.
+12FB	FE 	10               	CP 	10H
+12FD	28 	47               	JR 	Z,	PLUSKEY		; Branch to plus key.
+12FF	FE 	12               	CP 	12H
+1301	28 	66               	JR 	Z,	GOKEY		; Branch to GO key.
+1303	18 	B5               	JR 	LOOP1
+
+HEXKEY:	
+1305   	21 	DE 	1F            	LD 	HL,	1FDEH		; Get address in ADSAVE.
+1308	ED 	6F               	RLD
+130A	23                  		INC 	HL
+130B	ED 	6F               	RLD				; Shift digits left each time a key is pressed.
+130D	ED 	5B 	DE 	1F     	LD 	DE,	(1FDEH)		; Save address back to ADSAVE ready for display.
+1311 	3A 	E4 	1F            	LD 	A,	(1FE4H)		; Get STATE.
+1314	FE 	01               	CP 	01H
+1316	28 	06               	JR 	Z,	SAVESTARTADDR	; If STATE = 01 save displayed address to start address.
+1318	FE 	02               	CP 	02H
+131A	28 	08               	JR 	Z,	SAVEENDADDR	; If STATE = 02 save displayed address to end address. 
+131C	18 	9C               	JR 	LOOP1
+
+SAVESTARTADDR:
+131E 	ED 	53 	C2 	1F     	LD 	(1FC2H), DE
+1322 	18 	96               	JR 	LOOP1
+SAVEENDADDR:
+1324	ED 	53 	C0 	1F     	LD 	(1FC0H), DE
+1328	18 	90               	JR 	LOOP1
+
+MINUSKEY:
+132A 	F5                  		PUSH 	AF
+132B 	C5                  		PUSH 	BC
+132C 	D5                  		PUSH 	DE
+132D 	E5                  		PUSH 	HL
+132E	2A 	C2 	1F            	LD 	HL,	(1FC2H)		; Get start address.
+1331	54                  		LD 	D,	H
+1332 	5D                  		LD 	E,	L
+1333	ED 	53 	DE 	1F     	LD 	(1FDEH), DE		; Save to ADSAVE.
+1337	21 	E4 	1F            	LD 	HL,	1FE4H		; Get current STATE.
+133A	7E                  		LD 	A,	(HL)
+133B	3D                  		DEC 	A			; 
+133C	28 	21               	JR 	Z,	BLANKDISPLAY	; Blank the display if further "-" keypresses 
+133E	35                  		DEC 	(HL)			; are detected as STATE has reached its end stop.
+RETURN1:								; Do not decrement STATE any more.
+133F 	E1                  		POP 	HL
+1340	D1                  		POP 	DE
+1341	C1                  		POP 	BC
+1342	F1                  		POP 	AF
+1343	C3 	BA 	12            	JP 	LOOP1
+
+PLUSKEY:
+1346	F5                  		PUSH 	AF
+1347	C5                  		PUSH 	BC
+1348	D5                  		PUSH 	DE
+1349	E5                  		PUSH 	HL
+134A	2A 	C0 	1F            	LD 	HL, 	(1FC0H)		; Get end address.
+134D	54                  		LD 	D,	H
+134E	5D                  		LD 	E, 	L
+134F	ED 	53 	DE 	1F    	LD 	(1FDEH), DE		; Save to ADSAVE.
+1353	21 	E4 	1F            	LD 	HL,	1FE4H		; Gat current STATE.
+1356	7E                  		LD 	A,	(HL)
+1357	3C                  		INC 	A
+1358	FE 	03               	CP 	03H
+135A	28 	03               	JR 	Z, 	BLANKDISPLAY	; Blank the display if further "+" keypresses
+135C	34                  		INC 	(HL)			; are detected as STATE has reached its end stop.
+135D	18 	E0               	JR 	RETURN1			; Do not increment STATE any more.
+
+BLANKDISPLAY:
+135F	CD 	B4 	13            	CALL 	BLANKDIGITS		; Turn off all segments to indicate 
+KEYDOWN:								; operation not possible.
+1362	CD 	24 	06            	CALL 	SCAN1			; Scan keyboard and display once.
+1365	30 	FB               	JR 	NC,	KEYDOWN		; Repeat if key not released.
+1367	18 	D6               	JR 	RETURN1			
+
+GOKEY:	
+1369	CD 	00 	10            	CALL 	1000			; Initialise i2C bus.
+136C	2A 	C2 	1F            	LD 	HL,	(1FC2H)		; Get saved start address.
+136F	ED 	5B 	C0 	1F     	LD 	DE,	(1FC0H)		; Get saved end address.
+1373	3E 	AE               	LD 	A,	AEH		; Set i2C EEPROM device address.
+1375	CD 	DA 	11            	CALL 	11DA			; Call i2C block read routine.
+1378	C3 	C4 	13            	JP 	J2:			; 
+
+PUT_S:
+137B	F5				PUSH	AF
+137C	C5				PUSH	BC
+137D	D5				PUSH	DE
+137E	E5				PUSH	HL
+137F	3E	05			LD	A,	05		; "S" character.
+1381	CD	89	06		CALL	HEX7			; Convert to display format.
+1384	32	B4	1F		LD	(1FB4),	A		; Save to digit 6 in display buffer.
+RETURN2:
+1387	E1            			POP 	HL
+1388	D1                  		POP 	DE
+1389	C1                  		POP 	BC
+138A	F1                  		POP 	AF
+138B	C9                  		RET
+
+PUT_E:
+138C	F5            			PUSH 	AF
+138D	C5                  		PUSH 	BC
+138E	D5                  		PUSH 	DE
+138F	E5                  		PUSH 	HL
+1390	3E 	0E               	LD 	A,	0E		; "E" character.
+1392	CD 	89 	06            	CALL 	HEX7			; Convert to display format.
+1395	32 	B4 	1F            	LD 	(1FB4H), A		; Save to digit 6 in display buffer.
+1398	18 	ED               	JR 	RETURN2
+
+BEEP:									
+139A	F5            			PUSH 	AF
+139B	C5                  		PUSH 	BC
+139C	D5                  		PUSH 	DE
+139D	E5                  		PUSH 	HL
+139E	21 	F1 	1F            	LD 	HL,	1FF1H
+13A1	4E                  		LD 	C,	(HL)
+13A2	2A 	F2 	1F            	LD 	HL,	(1FF2H)
+13A5	3A 	F0 	1F            	LD 	A,	(1FF0H)
+13A8	FE 	55               	CP 	55H
+13AA	20 	03               	JR 	NZ,	NOTONE
+13AC	CD 	E4 	05            	CALL 	TONE			; call ROM routine for TONE.
+NOTONE:
+13AF	E1            			POP 	HL
+13B0	D1                  		POP 	DE
+13B1	C1                  		POP 	BC
+13B2	F1                  		POP 	AF
+13B3	C9                  		RET
+
+BLANKDIGITS:								; Turn off all digits.
+13B4	3E 	00         		LD 	A,	00H
+13B6	21 	B0 	1F            	LD 	HL,	1FB0H
+13B9	06 	06               	LD 	B,	06H
+NEXT:
+13BB	77          			LD 	(HL),	A
+13BC	23                  		INC 	HL
+13BD	10 	FC               	DJNZ 	NEXT
+13BF	DD 	21 	B0 	1F     	LD 	IX,	1FB0H
+13C3	C9 				RET
+
+J2:
+13C4	2B				DEC	HL
+13C5  	22	DE	1F		LD	(IFDE),	HL		; Save last address to ADSAVE to be displayed after completion. 
+13C8	DD	21	B6	1F	LD	IX,	1FB6		; Set IX register to point to display buffer. 
+13CC	C3	20	03		JP	0320			; Jump back to OS and display last address.            		
+	
