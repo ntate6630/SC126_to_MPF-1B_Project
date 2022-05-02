@@ -37,4 +37,11 @@ Once the transistor is ON after three seconds the user can freely use the MONI k
 original Micro Professor. The speed of 74Fxxx series logic is so fast there are no latency issues even when the CPU is running at 36.864 MHZ.
 I now have a Micro Professor that now runs 20 times faster!!!
 
+# Extended functionality
+Some additional features I have added to the firmware are
+
+Serial transmit and receive for sending users code and BASIC programs to another Micro Professor. This replaces the original cassette tape load and save routines.  
+
+i2C EEPROM read and write integrated in to the Micro Professor user interface. This allows loading and saving of users code or BASIC programs to an i2C EEPROM.
+
 
